@@ -1,8 +1,44 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView, DetailView, UpdateView
 from django.utils import timezone
 from .models import Post, Category
+from .forms import PostForm
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+class UserDetailView(DetailView):
+    model = get_user_model()
+    template_name = 'blog/profile.html'
+    context_object_name = 'profile'  # Имя переменной в шаблоне
+    
+    def get_object(self, queryset=None):
+        username = self.kwargs['username']  # Match the URL parameter
+        return get_object_or_404(get_user_model(), username=username)
+    
+    
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = get_user_model()
+    template_name = 'blog/user.html'
+    context_object_name = 'profile'  # Имя переменной в шаблоне
+    fields = ['username', 'first_name', 'last_name', 'email']  # Add this line with fields you want editable
+    def get_object(self, queryset=None):
+        return self.request.user
+    
+    def get_success_url(self):
+        # Используем reverse_lazy с именем URL 'profile' и текущим username
+        return reverse_lazy('blog:profile', kwargs={'username': self.object.username})
+
+
+
+
+class PostCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/create.html'
+    success_url = reverse_lazy('birthday:list')
 
 
 class PostDetailView(DetailView):

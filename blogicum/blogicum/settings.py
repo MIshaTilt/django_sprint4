@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_bootstrap5'
 ]
 
 MIDDLEWARE = [
@@ -132,3 +133,15 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    # Когда проект будет опубликован и станет доступен для пользователей,
+    # в этот список нужно будет добавить и адреса домена, где он будет размещён,
+    # например 'acme.not' и 'www.acme.not'
+] 
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure' 
+
+LOGIN_REDIRECT_URL = 'blog:index'
