@@ -1,7 +1,7 @@
 from django import forms
 
 # Импортируем класс модели Birthday.
-from .models import Post
+from .models import Post, Comment
 
 class PostForm(forms.ModelForm):
     class Meta:
@@ -15,3 +15,11 @@ class PostForm(forms.ModelForm):
                 'class': 'form-control'   # Дополнительные классы, если нужно
             })
         }
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        # Указываем модель, на основе которой должна строиться форма.
+        model = Comment
+        # Указываем, что надо отобразить все поля.
+        fields = ['text']
+        

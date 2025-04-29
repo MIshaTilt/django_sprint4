@@ -2,11 +2,21 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, DetailView, UpdateView
 from django.utils import timezone
-from .models import Post, Category
-from .forms import PostForm
+from .models import Post, Category, Comment
+from .forms import PostForm, CommentForm
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+
+class CommentListView(ListView):
+    model = Comment
+    template_name = 'blog/comment.html'
+    
+class CommentCreateView(CreateView):
+    model = Comment
+    template_name = 'blog/comment.html'
+    form_class = CommentForm
+
 
 
 class UserDetailView(DetailView):
@@ -66,6 +76,11 @@ class PostDetailView(DetailView):
             raise Http404("Публикация не найдена или недоступна.")
 
         return post
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()  # Add form to context
+        context['comments'] = self.object.comments.all()  # Assuming related_name='comments'
+        return context
 
 
 class PostsListView(ListView):

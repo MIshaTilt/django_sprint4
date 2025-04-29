@@ -96,3 +96,29 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
+
+
+class Comment(models.Model):
+    text = models.TextField(
+        blank=False,
+        verbose_name='Текст')
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        blank=False,
+        verbose_name='Пост'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        blank=False,
+        verbose_name='Автор комментария'
+    )
+    created_at = models.DateTimeField(
+        blank=False,
+        verbose_name='Добавлено',
+        auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
