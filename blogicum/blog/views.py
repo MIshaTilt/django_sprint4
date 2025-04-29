@@ -52,15 +52,13 @@ class PostCreateView(CreateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
-    success_url = reverse_lazy('birthday:list')
+    success_url = reverse_lazy('blog:post_list')  # Default redirect to post list
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # Set the author to the logged-in user
+        form.instance.author = self.request.user
         return super().form_valid(form)
-    
-    def get_success_url(self):
-        # Используем reverse_lazy с именем URL 'profile' и текущим username
-        return reverse_lazy('blog:profile', kwargs={'profile': self.object.username})
+
+    success_url = reverse_lazy('blog:index')
     
 
 
@@ -105,7 +103,7 @@ class PostsListView(ListView):
     # ...сортировку, которая будет применена при выводе списка объектов:
     ordering = 'id'
     # ...и даже настройки пагинации:
-    paginate_by = 5
+    paginate_by = 10
     template_name = 'blog/index.html'
 
     def get_queryset(self):

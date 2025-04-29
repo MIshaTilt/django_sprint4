@@ -92,6 +92,10 @@ class Post(models.Model):
         blank=False,
         verbose_name='Добавлено',
         auto_now_add=True)
+    
+    @property
+    def username(self):
+        return self.author.username
 
     class Meta:
         verbose_name = 'публикация'
