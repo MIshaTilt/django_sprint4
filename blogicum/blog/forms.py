@@ -21,5 +21,5 @@ class CommentForm(forms.ModelForm):
         # Указываем модель, на основе которой должна строиться форма.
         model = Comment
         # Указываем, что надо отобразить все поля.
-        fields = ['text']
+        fields = '__all__' 
         

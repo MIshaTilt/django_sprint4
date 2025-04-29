@@ -11,11 +11,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 class CommentListView(ListView):
     model = Comment
     template_name = 'blog/comment.html'
+    form_class = CommentForm
+
     
 class CommentCreateView(CreateView):
     model = Comment
     template_name = 'blog/comment.html'
     form_class = CommentForm
+    success_url = reverse_lazy('birthday:list')
+
 
 
 
@@ -50,6 +54,15 @@ class PostCreateView(CreateView):
     template_name = 'blog/create.html'
     success_url = reverse_lazy('birthday:list')
 
+    def form_valid(self, form):
+        form.instance.author = self.request.user  # Set the author to the logged-in user
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        # Используем reverse_lazy с именем URL 'profile' и текущим username
+        return reverse_lazy('blog:profile', kwargs={'profile': self.object.username})
+    
+
 
 class PostDetailView(DetailView):
     model = Post
@@ -76,10 +89,13 @@ class PostDetailView(DetailView):
             raise Http404("Публикация не найдена или недоступна.")
 
         return post
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = CommentForm()  # Add form to context
-        context['comments'] = self.object.comments.all()  # Assuming related_name='comments'
+        context['comments'] = self.object.comment_set.all()
+        if self.request.user.is_authenticated:
+            context['form'] = CommentForm()
+
         return context
 
 
