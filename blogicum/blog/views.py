@@ -30,7 +30,21 @@ class UserDetailView(DetailView):
     
     def get_object(self, queryset=None):
         username = self.kwargs['username']  # Match the URL parameter
+        print(username)
         return get_object_or_404(get_user_model(), username=username)
+    
+    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Запрашиваем все поздравления для выбранного дня рождения.
+        context['page_obj'] = (
+            # Дополнительно подгружаем авторов комментариев,
+            # чтобы избежать множества запросов к БД.
+            Post.objects.filter(author=self.object).select_related('author')
+        )
+        return context 
     
     
 class UserUpdateView(LoginRequiredMixin, UpdateView):
