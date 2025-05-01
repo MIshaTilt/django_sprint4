@@ -1,6 +1,6 @@
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, DetailView, UpdateView
+from django.views.generic import ListView, DetailView, CreateView, DetailView, UpdateView, DeleteView
 from django.utils import timezone
 from .models import Post, Category, Comment
 from .forms import PostForm, CommentForm
@@ -14,13 +14,37 @@ class CommentListView(ListView):
     form_class = CommentForm
 
     
-class CommentCreateView(CreateView):
+class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     template_name = 'blog/comment.html'
     form_class = CommentForm
-    success_url = reverse_lazy('birthday:list')
 
+    def get_object(self, queryset=None):
+        post_id = self.kwargs['post_id']  # Получаем post_id из URL
+        return get_object_or_404(Post, id=post_id)  # Используем поле id вместо post_id
 
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.post = self.get_object()  # Используем get_object для получения Post
+        return super().form_valid(form)
+
+    success_url = reverse_lazy('blog:index')
+
+class CommentUpdateView(LoginRequiredMixin, UpdateView):
+    model = Comment
+    template_name = 'blog/comment.html'
+    form_class = CommentForm
+    
+
+    success_url = reverse_lazy('blog:index')
+
+class CommentDeleteView(LoginRequiredMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment.html'
+    form_class = CommentForm
+    
+
+    success_url = reverse_lazy('blog:index')
 
 
 class UserDetailView(DetailView):
@@ -62,19 +86,47 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 
 
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
-    success_url = reverse_lazy('blog:post_list')  # Default redirect to post list
 
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-    success_url = reverse_lazy('blog:index')
-    
+    def get_success_url(self):
+        # Перенаправляем на страницу профиля текущего пользователя
+        return reverse('blog:profile', kwargs={'username': self.request.user.username})
 
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/create.html'
+    success_url = reverse_lazy('blog:post_list')  # Default redirect to post list
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            # Перенаправляем неавторизованного пользователя на страницу поста
+            return HttpResponseRedirect(reverse('blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}))
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # Убедимся, что только автор может редактировать пост
+        if form.instance.author != self.request.user:
+            return HttpResponseRedirect(reverse('blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}))
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Перенаправляем на страницу профиля после успешного редактирования
+        return reverse('blog:profile', kwargs={'username': self.request.user.username})
+
+    success_url = reverse_lazy('blog:index')
+
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'blog/create.html'
+    success_url = reverse_lazy('blog:index')
 
 class PostDetailView(DetailView):
     model = Post
@@ -134,11 +186,14 @@ class PostsListView(ListView):
             category__is_published=True  # Категория опубликована
         ).order_by('-pub_date')  # Сортируем по дате публикации (новые сначала)
 
+    
 
-class CategoryPostListView(ListView):
+class CategoryListView(ListView):
     model = Post
     template_name = 'blog/category.html'  # Укажите ваш шаблон
-    context_object_name = 'post_list'  # Имя переменной в шаблоне
+    context_object_name = 'page_obj'  # Имя переменной в шаблоне
+
+    #paginate_by=5
 
     def get_queryset(self):
         # Получаем slug категории из URL

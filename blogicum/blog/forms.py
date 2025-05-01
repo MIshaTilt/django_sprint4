@@ -9,7 +9,7 @@ class PostForm(forms.ModelForm):
         # Указываем модель, на основе которой должна строиться форма.
         model = Post
         # Указываем, что надо отобразить все поля.
-        fields = ['title','text','pub_date','location','category','is_published']
+        fields = ['title','text','pub_date','location','category','is_published','image']
         widgets = {
             'pub_date': forms.DateTimeInput(attrs={
                 'type': 'datetime-local',  # HTML5 input type
@@ -32,5 +32,5 @@ class CommentForm(forms.ModelForm):
         # Указываем модель, на основе которой должна строиться форма.
         model = Comment
         # Указываем, что надо отобразить все поля.
-        fields = '__all__' 
+        fields = ['text']
         
