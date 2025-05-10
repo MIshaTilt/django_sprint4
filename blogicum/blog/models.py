@@ -33,8 +33,7 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title 
-
+        return self.title
 
 
 class Location(models.Model):
@@ -56,8 +55,7 @@ class Location(models.Model):
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return self.name 
-
+        return self.name
 
 
 class Post(models.Model):
@@ -102,7 +100,6 @@ class Post(models.Model):
         auto_now_add=True)
     image = models.ImageField('Фото', upload_to='posts_images', blank=True)
 
-    
     @property
     def username(self):
         return self.author.username
@@ -112,8 +109,7 @@ class Post(models.Model):
         verbose_name_plural = 'Публикации'
 
     def __str__(self):
-        return self.title 
-
+        return self.title
 
 
 class Comment(models.Model):
@@ -142,5 +138,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text 
-
+        return self.text
