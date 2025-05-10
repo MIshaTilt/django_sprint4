@@ -1,8 +1,9 @@
 from django import forms
 from django.utils import timezone
-
-# Импортируем класс модели Birthday.
+from django.contrib.auth import get_user_model
 from .models import Post, Comment
+
+User = get_user_model()
 
 class PostForm(forms.ModelForm):
     class Meta:
