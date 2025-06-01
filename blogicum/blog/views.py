@@ -6,7 +6,7 @@ from django.views.generic import (
 from django.utils import timezone
 from .models import Post, Category, Comment
 from .forms import PostForm, CommentForm
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
@@ -29,16 +29,16 @@ class CommentMixin:
     template_name = 'blog/comment.html'
 
     def get_post(self):
-        return get_object_or_404(Post, id=self.kwargs['post'])
+        return get_object_or_404(Post, id=self.kwargs['post_id'])
 
     def get_success_url(self):
-        return reverse_lazy('blog:post_detail',
-                            kwargs={'post': self.get_post().id})
+        return reverse('blog:post_detail',
+                            kwargs={'post_id': self.get_post().id})
 
 
 class EditCommentMixin(CommentMixin):
     def get_object(self, queryset=None):
-        comment_id = self.kwargs.get('comment')
+        comment_id = self.kwargs.get('comment_id')
         comment = get_object_or_404(Comment, pk=comment_id)
         if comment.author != self.request.user:
             raise Http404("Действие запрещено")
@@ -122,8 +122,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        # Используем reverse_lazy с именем URL 'profile' и текущим username
-        return reverse_lazy('blog:profile',
+        return reverse('blog:profile',
                             kwargs={'username': self.object.username})
 
 
@@ -146,20 +145,20 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
-    pk_url_kwarg = 'post'
+    pk_url_kwarg = 'post_id'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('blog:post_detail', post=self.kwargs['post'])
+            return redirect('blog:post_detail', post_id=self.kwargs['post_id'])
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if form.instance.author != self.request.user:
-            return redirect('blog:post_detail', post=self.kwargs['post'])
+            return redirect('blog:post_detail', post_id=self.kwargs['post_id'])
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('blog:profile',
+        return reverse('blog:profile',
                             kwargs={'username': self.request.user.username})
 
 
@@ -168,7 +167,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'blog/create.html'
 
     def get_object(self, queryset=None):
-        post_id = self.kwargs.get('post')
+        post_id = self.kwargs.get('post_id')
         post = get_object_or_404(Post, pk=post_id)
         if post.author != self.request.user and not self.request.user.is_staff:
             raise Http404("Удаление запрещено")
@@ -193,7 +192,7 @@ class PostDetailView(DetailView):
 
     def get_object(self, queryset=None):
         # Получаем объект публикации по первичному ключу (pk)
-        post = get_object_or_404(Post, pk=self.kwargs['post'])
+        post = get_object_or_404(Post, pk=self.kwargs['post_id'])
 
         # Текущее время
         now = timezone.now()
